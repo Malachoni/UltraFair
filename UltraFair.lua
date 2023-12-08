@@ -37,7 +37,7 @@ local Player = Players.LocalPlayer
 local Workspace = Get.Workspace
 local RunService = Get.RunService
 local Rep = Get.ReplicatedStorage
---local HttpService = Get.HttpService
+local HttpService = Get.HttpService
 
 
 local function Save(File, Table)
@@ -63,9 +63,9 @@ local function Load(File)
     end
 end
 
-AuraSettings = Load("AuraSettings")
-RollSettings = Load("RollSettings")
-FarmSettings = Load("FarmSettings")
+--AuraSettings = Load("AuraSettings")
+--RollSettings = Load("RollSettings")
+--FarmSettings = Load("FarmSettings")
 
 local VirtualUser=game:service'VirtualUser'
 game:service'Players'.LocalPlayer.Idled:connect(function()
