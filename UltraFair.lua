@@ -581,7 +581,7 @@ Farm()
 
 local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Malachoni/UltraFair/main/GUI.lua", true))()
 
-local MainUI = UILibrary.Load("Ultra Fair")
+local MainUI = UILibrary.Load("Much Ultra, Very Fair")
 
 local PageFarm = MainUI.AddPage("Farm", false)
     
