@@ -37,7 +37,35 @@ local Player = Players.LocalPlayer
 local Workspace = Get.Workspace
 local RunService = Get.RunService
 local Rep = Get.ReplicatedStorage
+local HttpService = Get.HttpService
 
+
+local function Save(File, Table)
+    if (writefile) then
+        local json = HttpService:JSONEncode(Table)
+        writefile("UU_"..File..".txt", json)
+    else
+        print("Saving Not Supported")
+    end
+end
+
+local function Load(File)
+    if not (readfile and isfile) then
+        print("Loading Not Supported")
+        --File Reading Not supported
+        return
+    end
+    if isfile("UU_"..File..".txt") then
+        print("Found File")
+        Table = HttpService:JSONDecode(readfile("UU_"..File..".txt"))
+        print("Settings Loaded")
+        return(Table)
+    end
+end
+
+AuraSettings = Load("AuraSettings")
+RollSettings = Load("RollSettings")
+FarmSettings = Load("FarmSettings")
 
 local VirtualUser=game:service'VirtualUser'
 game:service'Players'.LocalPlayer.Idled:connect(function()
