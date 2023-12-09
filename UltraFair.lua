@@ -106,17 +106,17 @@ for i, v in pairs(A) do
 end
 
 
-RunService.Stepped:Connect(
-   function()
-       if Toggles.Farm then
-           for i, v in pairs(Player.Character:GetChildren()) do
-               if v:IsA("BasePart") then
-                   v.CanCollide = false
-               end
-           end
-       end
-   end
-)
+--RunService.Stepped:Connect(
+   --function()
+      -- if Toggles.Farm then
+          -- for i, v in pairs(Player.Character:GetChildren()) do
+              -- if v:IsA("BasePart") then
+                 --  v.CanCollide = false
+          --     end
+       --    end
+    --   end
+ --  end
+--)
 
 
 local function ActivateAbility()
@@ -441,7 +441,7 @@ end
 Farm()
 
 local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Malachoni/UltraFair/main/GUI.lua", true))()
-local MainUI = UILibrary.Load("Much Ultra, Very Fair")
+local MainUI = UILibrary.Load("Ultra Fair")
 local PageFarm = MainUI.AddPage("Farm", false)
 local FarmToggle = PageFarm.AddToggle("Auto Farm (Set Aura Hit Mode)", false, function(value)
     Toggles.Farm = value
