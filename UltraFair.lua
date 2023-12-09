@@ -12,7 +12,6 @@ getgenv().Toggles = {
 getgenv().FarmSettings = {
     AuraDistance = 6,
     FarmDistance = 3,
-    KillPlayers = true,
     SelectedQuest = nil
 }
 
@@ -35,41 +34,8 @@ local Player = Players.LocalPlayer
 local Workspace = Get.Workspace
 local RunService = Get.RunService
 local Rep = Get.ReplicatedStorage
-local HttpService = Get.HttpService
 
 
-local function Save(File, Table)
-    if (writefile) then
-        local json = HttpService:JSONEncode(Table)
-        writefile("UU_"..File..".txt", json)
-    else
-        print("Saving Not Supported")
-    end
-end
-
-local function Load(File)
-    if not (readfile and isfile) then
-        print("Loading Not Supported")
-        --File Reading Not supported
-        return
-    end
-    if isfile("UU_"..File..".txt") then
-        print("Found File")
-        Table = HttpService:JSONDecode(readfile("UU_"..File..".txt"))
-        print("Settings Loaded")
-        return(Table)
-    end
-end
-
-AuraSettings = Load("AuraSettings")
-RollSettings = Load("RollSettings")
-FarmSettings = Load("FarmSettings")
-
---local VirtualUser=game:service'VirtualUser'
---game:service'Players'.LocalPlayer.Idled:connect(function()
---VirtualUser:CaptureController()
---VirtualUser:ClickButton2(Vector2.new())
---end)
 
 
 local Old = getsenv(Player.PlayerScripts.MoveHandler)
@@ -90,33 +56,12 @@ hookfunction(Old.addparticle, function()
 end)
 
 
---function HideName()
-  --  for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-      --  if v.ClassName == "BillboardGui" then
-           --v:Destroy()
-        --end
-    --end
---end
-
 
 A = require(Workspace.EnemyStats) --Get enemy names and stats
 local MobList = {}
 for i, v in pairs(A) do
     table.insert(MobList, i) --append name to list
 end
-
-
---RunService.Stepped:Connect(
-   --function()
-      -- if Toggles.Farm then
-          -- for i, v in pairs(Player.Character:GetChildren()) do
-              -- if v:IsA("BasePart") then
-                 --  v.CanCollide = false
-          --     end
-       --    end
-    --   end
- --  end
---)
 
 
 local function ActivateAbility()
@@ -453,11 +398,6 @@ end)
 
 local SliderAuraDistance = PageFarm.AddSlider("Farm Aura Distance", {Min = 0, Max = 20, Def = FarmSettings.AuraDistance}, function(value)
     FarmSettings.AuraDistance = value
-    Save("FarmSettings", FarmSettings)
-end)
-
-local KillToggle = PageFarm.AddToggle("Kill Players while Farming (Uses Kill Aura Distance)", FarmSettings.KillPlayers, function(value)
-    FarmSettings.KillPlayers = value
     Save("FarmSettings", FarmSettings)
 end)
 
