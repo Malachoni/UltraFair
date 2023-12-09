@@ -65,42 +65,38 @@ AuraSettings = Load("AuraSettings")
 RollSettings = Load("RollSettings")
 FarmSettings = Load("FarmSettings")
 
-local VirtualUser=game:service'VirtualUser'
-game:service'Players'.LocalPlayer.Idled:connect(function()
-VirtualUser:CaptureController()
-VirtualUser:ClickButton2(Vector2.new())
-end)
+--local VirtualUser=game:service'VirtualUser'
+--game:service'Players'.LocalPlayer.Idled:connect(function()
+--VirtualUser:CaptureController()
+--VirtualUser:ClickButton2(Vector2.new())
+--end)
 
 
 local Old = getsenv(Player.PlayerScripts.MoveHandler)
-
 hookfunction(Old.camshake, function()
     return
 end)
-
 hookfunction(Old._G.knockback, function()
     return
 end)
-
 hookfunction(Old._G.HitEffect, function()
     return
 end)
 hookfunction(Old._G.flasheffect, function()
     return
 end)
-
 hookfunction(Old.addparticle, function()
     return
 end)
 
 
-function HideName()
-    for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-        if v.ClassName == "BillboardGui" then
-            v:Destroy()
-        end
-    end
-end
+--function HideName()
+  --  for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+      --  if v.ClassName == "BillboardGui" then
+           --v:Destroy()
+        --end
+    --end
+--end
 
 
 A = require(Workspace.EnemyStats) --Get enemy names and stats
