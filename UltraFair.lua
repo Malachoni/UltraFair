@@ -5,6 +5,8 @@ getgenv().Toggles = {
     Farm = false,
     KillAura = false,
     MobAura = false,
+    AutoRoll = false,
+    Store = false,
     FarmBoss = false,
     BreakBarrier = false
 }
@@ -12,6 +14,7 @@ getgenv().Toggles = {
 getgenv().FarmSettings = {
     AuraDistance = 6,
     FarmDistance = 3,
+    KillPlayers = true,
     SelectedQuest = nil
 }
 
@@ -34,27 +37,72 @@ local Player = Players.LocalPlayer
 local Workspace = Get.Workspace
 local RunService = Get.RunService
 local Rep = Get.ReplicatedStorage
+local HttpService = Get.HttpService
 
 
+local function Save(File, Table)
+    if (writefile) then
+        local json = HttpService:JSONEncode(Table)
+        writefile("UU_"..File..".txt", json)
+    else
+        print("Saving Not Supported")
+    end
+end
+
+local function Load(File)
+    if not (readfile and isfile) then
+        print("Loading Not Supported")
+        --File Reading Not supported
+        return
+    end
+    if isfile("UU_"..File..".txt") then
+        print("Found File")
+        Table = HttpService:JSONDecode(readfile("UU_"..File..".txt"))
+        print("Settings Loaded")
+        return(Table)
+    end
+end
+
+AuraSettings = Load("AuraSettings")
+RollSettings = Load("RollSettings")
+FarmSettings = Load("FarmSettings")
+
+local VirtualUser=game:service'VirtualUser'
+game:service'Players'.LocalPlayer.Idled:connect(function()
+VirtualUser:CaptureController()
+VirtualUser:ClickButton2(Vector2.new())
+end)
 
 
 local Old = getsenv(Player.PlayerScripts.MoveHandler)
+
 hookfunction(Old.camshake, function()
     return
 end)
+
 hookfunction(Old._G.knockback, function()
     return
 end)
+
 hookfunction(Old._G.HitEffect, function()
     return
 end)
 hookfunction(Old._G.flasheffect, function()
     return
 end)
+
 hookfunction(Old.addparticle, function()
     return
 end)
 
+
+function HideName()
+    for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+        if v.ClassName == "BillboardGui" then
+            v:Destroy()
+        end
+    end
+end
 
 
 A = require(Workspace.EnemyStats) --Get enemy names and stats
@@ -62,6 +110,19 @@ local MobList = {}
 for i, v in pairs(A) do
     table.insert(MobList, i) --append name to list
 end
+
+
+RunService.Stepped:Connect(
+   function()
+       if Toggles.Farm then
+           for i, v in pairs(Player.Character:GetChildren()) do
+               if v:IsA("BasePart") then
+                   v.CanCollide = false
+               end
+           end
+       end
+   end
+)
 
 
 local function ActivateAbility()
@@ -383,14 +444,151 @@ local function BossFarm()
     end)
 end
 
+
+getgenv().AbilityDict = {}
+getgenv().ReplaceAbility = nil
+local RerollPath = Player.PlayerGui.Reroll
+local AbilityList = {}
+local AbilityStore = {}
+local StoredNames = {}
+
+
+AbilityDict = Load("AbilityFilter")
+for i, v in pairs(RerollPath.Prompt.Prompt.ScrollingFrame:GetChildren()) do
+    if v:IsA("TextButton") then
+        table.insert(AbilityList, v.Name)
+        if not (AbilityDict[v.Name]) then
+            AbilityDict[v.Name] = 0
+        end
+    end
+end
+
+local function ConvertFloat(stri)
+    local number = stri:split(".")
+    local decimal = tonumber(number[2])/10
+    local float = number[1] + decimal
+    return (float)
+end
+
+local function no()
+    for i,v in pairs(getconnections(RerollPath.Question.no.MouseButton1Click)) do
+        v.Function()
+    end
+end
+local function yes()
+    for i,v in pairs(getconnections(RerollPath.Question.yes.MouseButton1Click)) do
+        v.Function()
+    end
+end
+
+
+local function AutoRoll()
+    spawn(function()
+        while wait() and Toggles.AutoRoll do
+            RerollPath.Enabled = not RollSettings.Hide
+            spawn(function()
+                local Rolled
+
+                repeat
+                    wait()
+                until RerollPath.Question.Visible == true
+                Rolled = RerollPath.Rerolling.Ability.TextLabel.Text
+
+                local Level = Rolled:split("(")[2]:split(")")[1]
+                local Ability = string.gsub(Rolled:split("(")[1], "%s+$", "")
+
+                print("Rolled ".. Ability.. " " .. Level .. " | out of minimum | ".. AbilityDict[Ability])
+                Level = ConvertFloat(Level)
+            
+                if (Level >= RollSettings.Threshold) or (Level>= AbilityDict[Ability] and AbilityDict[Ability] ~= 0) then
+                    print("Found Ability")
+                    RerollPath.Enabled = true
+
+                    if Toggles.Store then
+
+                        repeat
+                            wait()
+                        until RerollPath.Question.Visible and RerollPath.Question.Title.Text == "Switch Ability"
+
+                        repeat
+                            no()
+                            wait()
+                        until RerollPath.Question.Visible and RerollPath.Question.Title.Text == "Store Ability"
+
+                        while RerollPath.Question.Visible and RerollPath.Question.Title.Text == "Store Ability" do
+                            yes()
+                            wait()
+                        end
+
+                        repeat
+                            wait()
+                        until RerollPath.AbilityStorage.Visible == true
+
+                        for i, v in AbilityStore do
+                            if ReplaceAbility == v.TextLabel.Text then
+                                spawn(function()
+                                    for i2,v2 in pairs(getconnections(v.MouseButton1Click)) do
+                                            v2.Function()
+                                    end
+                                end)
+
+                                repeat
+                                    wait()
+                                until RerollPath.Question.Visible and RerollPath.Question.Title.Text == "Replace" == true
+                                yes()
+                                Toggles.AutoRoll = false
+                            end
+                        end
+                        
+                    end
+                    Toggles.AutoRoll = false
+                else
+                    while RerollPath.Question.Visible == true do
+                        no()
+                        wait(0.2)
+                    end
+                end
+            end)
+
+            repeat
+                wait()
+            until RerollPath.Question.Visible== false and RerollPath.Rerolling.Visible == false
+            
+            Rep.Reroll:InvokeServer()
+            wait(3)
+        end
+    end)
+end
+
+spawn(function()
+	while wait() do
+		game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(character)
+            local Players = Get.Players
+            local Player = Players.LocalPlayer
+            getgenv().Attack = nil
+		end)
+		game:GetService("Players").LocalPlayer.Character:WaitForChild("Humanoid").Died()
+	end
+end)
+
+
 Farm()
 
+
+
+
+
+
 local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Malachoni/UltraFair/main/GUI.lua", true))()
-local MainUI = UILibrary.Load("Ultra Fair")
+
+local MainUI = UILibrary.Load("Much Ultra, Very Fair")
+
 local PageFarm = MainUI.AddPage("Farm", false)
+    
 local FarmToggle = PageFarm.AddToggle("Auto Farm (Set Aura Hit Mode)", false, function(value)
     Toggles.Farm = value
 end)
+
 local SliderFarmDistance = PageFarm.AddSlider("Farm Distance", {Min = 0, Max = 15, Def = FarmSettings.FarmDistance}, function(value)
     FarmSettings.FarmDistance = value
     Save("FarmSettings", FarmSettings)
@@ -398,6 +596,11 @@ end)
 
 local SliderAuraDistance = PageFarm.AddSlider("Farm Aura Distance", {Min = 0, Max = 20, Def = FarmSettings.AuraDistance}, function(value)
     FarmSettings.AuraDistance = value
+    Save("FarmSettings", FarmSettings)
+end)
+
+local KillToggle = PageFarm.AddToggle("Kill Players while Farming (Uses Kill Aura Distance)", FarmSettings.KillPlayers, function(value)
+    FarmSettings.KillPlayers = value
     Save("FarmSettings", FarmSettings)
 end)
 
@@ -460,18 +663,80 @@ end, AuraSettings.Mode)
 
 local PageRoll = MainUI.AddPage("Roll", false)
 
+local RollAbility = PageRoll.AddButton("Roll Ability", function()
+    Rep.Reroll:InvokeServer()
+end)
+
+local ToggleAutoRoll = PageRoll.AddToggle("Auto Roll Ability", false, function(value)
+    Toggles.AutoRoll = value
+    RerollPath.Enabled = true
+    if value then
+        AutoRoll()
+    end
+end)
+
+local ToggleAutoRoll = PageRoll.AddToggle("Hide GUI when Auto", false, function(value)
+    RollSettings.Hide = value
+    RerollPath.Enabled = true
+end)
+
+
+local RollThreshold = PageRoll.AddSlider("Roll Minimum Level (Global)", {Min = 0, Max = 30, Def = RollSettings.Threshold}, function(value)
+    RollSettings.Threshold = value
+    Save("RollSettings", RollSettings)
+end)
+
+ 
+local ReplaceSelect = PageRoll.AddDropdown("Replace Ability",
+    {
+        "LOAD"
+    }, function(value)
+        ReplaceAbility = value
+        
+
+end)
+
+
+spawn(function()
+    while true do
+        StoredNames = {}
+        for i, v in pairs(RerollPath.AbilityStorage.ScrollingFrame:GetChildren()) do
+            if v:IsA("TextButton") and v then
+                AbilityStore[i] = v
+                table.insert(StoredNames, v.TextLabel.Text)
+            end
+        end
+        ReplaceSelect.SetArray(StoredNames)
+        wait(0.3)
+    end
+end)
+
+
+
+
+local AutoStore = PageRoll.AddToggle("Auto Replace Ability", false, function(value)
+    Toggles.Store = value
+end)
+
+
 local LabelRoll = PageRoll.AddLabel("Equipment Roll")
 
 local RollFist = PageRoll.AddButton("Roll Fist", function()
     for i = 1, RollSettings.Amount do
-        local args = {[1] = "Fist"}
+        local args = {
+            [1] = "Fist"
+        }
+
         game:GetService("ReplicatedStorage").RollGear:InvokeServer(unpack(args))
     end
 end)
 
 local RollStyle = PageRoll.AddButton("Roll Style", function()
     for i = 1, RollSettings.Amount do
-        local args = {[1] = "Relic"}
+        local args = {
+            [1] = "Relic"
+        }
+
         game:GetService("ReplicatedStorage").RollGear:InvokeServer(unpack(args))
     end
 end)
@@ -482,7 +747,28 @@ local SliderGear = PageRoll.AddSlider("Equipment Roll Amount", {Min = 0, Max = 1
 end)
 
 
+
+local PageAutoRoll = MainUI.AddPage("Auto Config", true)
+
+local Button1 = PageAutoRoll.AddButton("Set Minimum Levels (Overrides Global, 0 is OFF)", function()
+    for i, v in pairs(AbilityDict) do
+        print("key: "..i.. " value: ".. v)
+    end
+end)
+
+local AbilitySliders = {}
+
+for i, v in pairs(AbilityList) do
+    table.insert(AbilitySliders, (PageAutoRoll.AddSlider(v, {Min = 0, Max = 30, Def = AbilityDict[v]}, function(value)
+        AbilityDict[v] = value
+        Save("AbilityFilter", AbilityDict)
+    end)))
+end
+
+
+
 local PageMisc = MainUI.AddPage("Misc", false)
+
 local HideName = PageMisc.AddButton("Hide Identity (Continuous)", function()
 	spawn(function()
 		while true do
