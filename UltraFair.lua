@@ -5,16 +5,13 @@ getgenv().Toggles = {
     Farm = false,
     KillAura = false,
     MobAura = false,
-    AutoRoll = false,
-    Store = false,
     FarmBoss = false,
     BreakBarrier = false
 }
 
 getgenv().FarmSettings = {
-    AuraDistance = 6,
-    FarmDistance = 3,
-    KillPlayers = true,
+    AuraDistance = 12,
+    FarmDistance = 10,
     SelectedQuest = nil
 }
 
@@ -357,8 +354,8 @@ local function Farm()
                             if (Hp1 - Enemy:FindFirstChildWhichIsA("Humanoid").Health) == 0 then
                                 EnemyBarrier = true
                             end
-                        elseif FarmSettings.KillPlayers and Obstacle and (Player.Character.HumanoidRootPart.Position - Obstacle:GetModelCFrame().Position).Magnitude < AuraSettings.KillDistance then
-                            Hit(Obstacle)
+                        --elseif Obstacle and (Player.Character.HumanoidRootPart.Position - Obstacle:GetModelCFrame().Position).Magnitude < AuraSettings.KillDistance then
+                            --Hit(Obstacle)
                         else
                             Player.Character.Humanoid:MoveTo(GetOffsetVector(Enemy))
                         end
@@ -599,10 +596,7 @@ local SliderAuraDistance = PageFarm.AddSlider("Farm Aura Distance", {Min = 0, Ma
     Save("FarmSettings", FarmSettings)
 end)
 
-local KillToggle = PageFarm.AddToggle("Kill Players while Farming (Uses Kill Aura Distance)", FarmSettings.KillPlayers, function(value)
-    FarmSettings.KillPlayers = value
-    Save("FarmSettings", FarmSettings)
-end)
+
 
 local BossToggle = PageFarm.AddToggle("Auto Boss Kill", false, function(value)
     Toggles.FarmBoss = value
@@ -663,62 +657,6 @@ end, AuraSettings.Mode)
 
 local PageRoll = MainUI.AddPage("Roll", false)
 
-local RollAbility = PageRoll.AddButton("Roll Ability", function()
-    Rep.Reroll:InvokeServer()
-end)
-
-local ToggleAutoRoll = PageRoll.AddToggle("Auto Roll Ability", false, function(value)
-    Toggles.AutoRoll = value
-    RerollPath.Enabled = true
-    if value then
-        AutoRoll()
-    end
-end)
-
-local ToggleAutoRoll = PageRoll.AddToggle("Hide GUI when Auto", false, function(value)
-    RollSettings.Hide = value
-    RerollPath.Enabled = true
-end)
-
-
-local RollThreshold = PageRoll.AddSlider("Roll Minimum Level (Global)", {Min = 0, Max = 30, Def = RollSettings.Threshold}, function(value)
-    RollSettings.Threshold = value
-    Save("RollSettings", RollSettings)
-end)
-
- 
-local ReplaceSelect = PageRoll.AddDropdown("Replace Ability",
-    {
-        "LOAD"
-    }, function(value)
-        ReplaceAbility = value
-        
-
-end)
-
-
-spawn(function()
-    while true do
-        StoredNames = {}
-        for i, v in pairs(RerollPath.AbilityStorage.ScrollingFrame:GetChildren()) do
-            if v:IsA("TextButton") and v then
-                AbilityStore[i] = v
-                table.insert(StoredNames, v.TextLabel.Text)
-            end
-        end
-        ReplaceSelect.SetArray(StoredNames)
-        wait(0.3)
-    end
-end)
-
-
-
-
-local AutoStore = PageRoll.AddToggle("Auto Replace Ability", false, function(value)
-    Toggles.Store = value
-end)
-
-
 local LabelRoll = PageRoll.AddLabel("Equipment Roll")
 
 local RollFist = PageRoll.AddButton("Roll Fist", function()
@@ -748,36 +686,8 @@ end)
 
 
 
-local PageAutoRoll = MainUI.AddPage("Auto Config", true)
-
-local Button1 = PageAutoRoll.AddButton("Set Minimum Levels (Overrides Global, 0 is OFF)", function()
-    for i, v in pairs(AbilityDict) do
-        print("key: "..i.. " value: ".. v)
-    end
-end)
-
-local AbilitySliders = {}
-
-for i, v in pairs(AbilityList) do
-    table.insert(AbilitySliders, (PageAutoRoll.AddSlider(v, {Min = 0, Max = 30, Def = AbilityDict[v]}, function(value)
-        AbilityDict[v] = value
-        Save("AbilityFilter", AbilityDict)
-    end)))
-end
-
-
 
 local PageMisc = MainUI.AddPage("Misc", false)
-
-local HideName = PageMisc.AddButton("Hide Identity (Continuous)", function()
-	spawn(function()
-		while true do
-    		HideName()
-    		wait(1)
-    	end
-	end)
-end)
-
 local AttackBarrier = PageMisc.AddToggle("Damage Arlo Boss Barrier", false, function(value)
     Toggles.BreakBarrier = value
 end)
