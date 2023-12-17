@@ -238,15 +238,6 @@ local function ArbiterHit(Enemy)
     Rep.Damage:FireServer(unpack(args))
 end
 
--- local function ArbiterUlt(Enemy)
---     local args = {
---         [1] = "Dark Blade",
---         [2] = Enemy:FindFirstChildWhichIsA("Humanoid"),
---         [4] = {["Ultimate"] = true}
---     }
---     Rep.Damage:FireServer(unpack(args))
--- end
-
 local function EnergyBlade(Enemy)
     local args = {
         [1] = "DualSwordHeavy",
