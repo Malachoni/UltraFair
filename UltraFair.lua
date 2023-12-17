@@ -64,11 +64,6 @@ AuraSettings = Load("AuraSettings")
 RollSettings = Load("RollSettings")
 FarmSettings = Load("FarmSettings")
 
-local VirtualUser=game:service'VirtualUser'
-game:service'Players'.LocalPlayer.Idled:connect(function()
-VirtualUser:CaptureController()
-VirtualUser:ClickButton2(Vector2.new())
-end)
 
 
 local Old = getsenv(Player.PlayerScripts.MoveHandler)
@@ -92,14 +87,6 @@ hookfunction(Old.addparticle, function()
     return
 end)
 
-
-function HideName()
-    for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-        if v.ClassName == "BillboardGui" then
-            v:Destroy()
-        end
-    end
-end
 
 
 A = require(Workspace.EnemyStats) --Get enemy names and stats
@@ -334,19 +321,12 @@ local function Farm()
                         local Enemy = getNearestMobs(EnemyType)
                         local CurrentDistance = (Player.Character.HumanoidRootPart.Position - Enemy:GetModelCFrame().Position).Magnitude
 
-                        local Obstacle
-                        Obstacle = getNearestObstacles(false)
-                        if Obstacle.Name ~= "Barrier" and not ((Player.Character.HumanoidRootPart.Position - Obstacle:GetModelCFrame().Position).Magnitude < AuraSettings.KillDistance) then
-                            EnemyBarrier = false
-                        end
                         if CurrentDistance < FarmSettings.AuraDistance then
                             local Hp1 = Enemy:FindFirstChildWhichIsA("Humanoid").Health
                             Hit(Enemy)
                             if (Hp1 - Enemy:FindFirstChildWhichIsA("Humanoid").Health) == 0 then
                                 EnemyBarrier = true
                             end
-                        --elseif Obstacle and (Player.Character.HumanoidRootPart.Position - Obstacle:GetModelCFrame().Position).Magnitude < AuraSettings.KillDistance then
-                            --Hit(Obstacle)
                         else
                             Player.Character.Humanoid:MoveTo(GetOffsetVector(Enemy))
                         end
