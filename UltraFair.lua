@@ -502,6 +502,34 @@ local PageRoll = MainUI.AddPage("Roll", false)
 
 local LabelRoll = PageRoll.AddLabel("Equipment Roll")
 
+
+local CombineRelic = PageRoll.AddButton("Combine Relic Max 300", function()
+    for i=1, 300, 1 do
+        local args = {
+            [1] = "Relic",
+            [2] = {
+                [1] = i}}
+        
+        game:GetService("ReplicatedStorage").UpgradeItem:InvokeServer(unpack(args))
+    end
+end)
+
+local CombineFist = PageRoll.AddButton("Combine Fist Max 300", function()
+    for i=1, 300, 1 do
+    local args = {
+        [1] = "Fist",
+        [2] = {
+            [1] = i}}
+    
+    game:GetService("ReplicatedStorage").UpgradeItem:InvokeServer(unpack(args))
+    end
+end)
+
+
+
+
+
+
 local RollFist = PageRoll.AddButton("Roll Fist", function()
     for i = 1, RollSettings.Amount do
         local args = {
