@@ -550,7 +550,7 @@ local RollStyle = PageRoll.AddButton("Roll Style", function()
     end
 end)
 
-local SliderGear = PageRoll.AddSlider("Equipment Roll Amount", {Min = 0, Max = 100, Def = RollSettings.Amount}, function(value)
+local SliderGear = PageRoll.AddSlider("Equipment Roll Amount", {Min = 0, Max = 300, Def = RollSettings.Amount}, function(value)
     RollSettings.Amount = value
     Save("RollSettings", RollSettings)
 end)
